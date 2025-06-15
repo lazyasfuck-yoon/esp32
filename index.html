@@ -3,13 +3,51 @@
 <head>
   <meta charset="UTF-8">
   <title>ESP32 얼굴 인식 경고</title>
-  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  <style>
+    body {
+      font-family: sans-serif;
+      background-color: #f2f2f2;
+      text-align: center;
+      padding-top: 60px;
+    }
+    #alertBox {
+      display: none;
+      background-color: #ffcccc;
+      border: 2px solid #ff0000;
+      padding: 20px;
+      margin: 20px auto;
+      width: 300px;
+      font-size: 20px;
+    }
+    #normalBox {
+      display: none;
+      background-color: #ccffcc;
+      border: 2px solid #00aa00;
+      padding: 20px;
+      margin: 20px auto;
+      width: 300px;
+      font-size: 20px;
+    }
+    button {
+      margin-top: 15px;
+      padding: 10px 20px;
+      font-size: 18px;
+    }
+  </style>
 </head>
 <body>
-  <h1>ESP32 얼굴 인식 시스템</h1>
-  <p id="status">상태 확인 중...</p>
-  <button id="confirmBtn" style="display: none;" onclick="confirmAlert()">경고 확인</button>
+  <h1>ESP32 얼굴 인식 상태</h1>
+
+  <div id="alertBox">
+    🚨 미등록 얼굴 감지됨!<br>
+    <button onclick="confirmAlert()">경고 확인</button>
+  </div>
+
+  <div id="normalBox">
+    ✅ 상태 정상 (등록된 얼굴 인식됨)
+  </div>
 
   <script>
     const firebaseConfig = {
@@ -25,25 +63,23 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // alert/status 값이 변경될 때마다 상태 업데이트
-    db.ref("alert/status").on("value", (snapshot) => {
-      const status = snapshot.val();
-      const statusText = document.getElementById("status");
-      const confirmBtn = document.getElementById("confirmBtn");
+    const alertBox = document.getElementById('alertBox');
+    const normalBox = document.getElementById('normalBox');
 
+    // Firebase alert/status 변화 감지
+    db.ref("alert/status").on("value", snapshot => {
+      const status = snapshot.val();
       if (status === "true") {
-        statusText.innerText = "⚠️ 미등록 얼굴이 감지되었습니다!";
-        confirmBtn.style.display = "inline";
+        alertBox.style.display = "block";
+        normalBox.style.display = "none";
       } else {
-        statusText.innerText = "✅ 정상 상태";
-        confirmBtn.style.display = "none";
+        alertBox.style.display = "none";
+        normalBox.style.display = "block";
       }
     });
 
     function confirmAlert() {
-      db.ref("alert/confirmed").set("true")
-        .then(() => alert("경고가 확인되었습니다."))
-        .catch((error) => alert("오류 발생: " + error));
+      db.ref("alert/confirmed").set("true");
     }
   </script>
 </body>
