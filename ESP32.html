@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>ESP32 얼굴 인식 경고</title>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+</head>
+<body>
+  <h1>ESP32 얼굴 인식 시스템</h1>
+  <p id="status">상태 확인 중...</p>
+  <button id="confirmBtn" style="display: none;" onclick="confirmAlert()">경고 확인</button>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDFtlTsunS8ZAEvAdAn-LWSrIxYWXoTSJ8",
+      authDomain: "esp32-60bab.firebaseapp.com",
+      databaseURL: "https://esp32-60bab-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "esp32-60bab",
+      storageBucket: "esp32-60bab.appspot.com",
+      messagingSenderId: "793717022113",
+      appId: "1:793717022113:web:91e97ae6af92eeac4bffe0"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // alert/status 값이 변경될 때마다 상태 업데이트
+    db.ref("alert/status").on("value", (snapshot) => {
+      const status = snapshot.val();
+      const statusText = document.getElementById("status");
+      const confirmBtn = document.getElementById("confirmBtn");
+
+      if (status === "true") {
+        statusText.innerText = "⚠️ 미등록 얼굴이 감지되었습니다!";
+        confirmBtn.style.display = "inline";
+      } else {
+        statusText.innerText = "✅ 정상 상태";
+        confirmBtn.style.display = "none";
+      }
+    });
+
+    function confirmAlert() {
+      db.ref("alert/confirmed").set("true")
+        .then(() => alert("경고가 확인되었습니다."))
+        .catch((error) => alert("오류 발생: " + error));
+    }
+  </script>
+</body>
+</html>
